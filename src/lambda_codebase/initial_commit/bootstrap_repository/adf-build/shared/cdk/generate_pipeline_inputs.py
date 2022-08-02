@@ -102,9 +102,7 @@ def worker_thread(p, organizations, auto_create_repositories, deployment_map, pa
             regions = step.get(
                 'regions', p.get(
                     'regions', DEPLOYMENT_ACCOUNT_REGION))
-            paths_tags = []
-            for path in step.get('path', []):
-                paths_tags.append(path)
+            paths_tags = list(step.get('path', []))
             if step.get('tags') is not None:
                 paths_tags.append(step.get('tags', {}))
             for path_or_tag in paths_tags:
@@ -123,9 +121,7 @@ def worker_thread(p, organizations, auto_create_repositories, deployment_map, pa
     deployment_map.update_deployment_parameters(pipeline)
     store_regional_parameter_config(pipeline, parameter_store)
     with open('cdk_inputs/{0}.json'.format(pipeline.input['name']), 'w') as outfile:
-        data = {}
-        data['input'] = pipeline.input
-        data['ssm_params'] = ssm_params
+        data = {'input': pipeline.input, 'ssm_params': ssm_params}
         json.dump(data, outfile)
 
 

@@ -50,8 +50,9 @@ class Action:
         if self.category not in ['Build', 'Deploy']:
             return None
         default_provider = self.map_params['default_providers'][self.category.lower()]
-        specific_role = self.target.get('properties', {}).get('role') or default_provider.get('properties', {}).get('role')
-        if specific_role:
+        if specific_role := self.target.get('properties', {}).get(
+            'role'
+        ) or default_provider.get('properties', {}).get('role'):
             account_id = self.account_id if self.provider == 'CodeBuild' else self.target['id']
             return 'arn:aws:iam::{0}:role/{1}'.format(account_id, specific_role)
         return None
@@ -149,20 +150,21 @@ class Action:
                                 'properties', {}).get(
                                     'root_dir') or ""
             if _path_prefix and not _path_prefix.endswith('/'):
-                _path_prefix = "{}/".format(_path_prefix)
+                _path_prefix = f"{_path_prefix}/"
             _input_artifact = "{map_name}-build".format(
                 map_name=self.map_params['name'],
             )
             _props = {
                 "ActionMode": self.action_mode,
-                "StackName": self.target.get(
-                    'properties', {}).get('stack_name') or self.map_params.get(
-                        'default_providers', {}).get(
-                            'deploy', {}).get(
-                                'properties', {}).get(
-                                    'stack_name') or "{0}{1}".format(
-                                        ADF_STACK_PREFIX, self.map_params['name']),
-                "ChangeSetName": "{0}{1}".format(ADF_STACK_PREFIX, self.map_params['name']),
+                "StackName": self.target.get('properties', {}).get('stack_name')
+                or self.map_params.get('default_providers', {})
+                .get('deploy', {})
+                .get('properties', {})
+                .get('stack_name')
+                or "{0}{1}".format(ADF_STACK_PREFIX, self.map_params['name']),
+                "ChangeSetName": "{0}{1}".format(
+                    ADF_STACK_PREFIX, self.map_params['name']
+                ),
                 "TemplateConfiguration": "{input_artifact}::{path_prefix}params/{target_name}_{region}.json".format(
                     input_artifact=_input_artifact,
                     path_prefix=_path_prefix,
@@ -170,8 +172,12 @@ class Action:
                     region=self.region,
                 ),
                 "Capabilities": "CAPABILITY_NAMED_IAM,CAPABILITY_AUTO_EXPAND",
-                "RoleArn": "arn:aws:iam::{0}:role/adf-cloudformation-deployment-role".format(self.target['id']) if not self.role_arn else self.role_arn
+                "RoleArn": self.role_arn
+                or "arn:aws:iam::{0}:role/adf-cloudformation-deployment-role".format(
+                    self.target['id']
+                ),
             }
+
             if self.map_params.get('default_providers', {}).get('build', {}).get('properties', {}).get('environment_variables', {}).get('CONTAINS_TRANSFORM'):
                 _props["TemplatePath"] = "{input_artifact}::{path_prefix}template_{region}.yml".format(
                     input_artifact=_input_artifact,
@@ -197,13 +203,19 @@ class Action:
                     filename=self.target['properties']['outputs'],
                 )
             if self.target.get('properties', {}).get('param_overrides'):
-                _overrides = {}
-                for override in self.target.get('properties', {}).get('param_overrides', []):
-                    _overrides["{0}".format(
-                        override['param'])] = {"Fn::GetParam": ["{0}".format(
-                            override['inputs']), "{0}.json".format(
-                                override['inputs']), "{0}".format(
-                                    override['key_name'])]}
+                _overrides = {
+                    "{0}".format(override['param']): {
+                        "Fn::GetParam": [
+                            "{0}".format(override['inputs']),
+                            "{0}.json".format(override['inputs']),
+                            "{0}".format(override['key_name']),
+                        ]
+                    }
+                    for override in self.target.get('properties', {}).get(
+                        'param_overrides', []
+                    )
+                }
+
                 _props['ParameterOverrides'] = json.dumps(_overrides)
             return _props
         if self.provider == "Jenkins":
@@ -266,12 +278,13 @@ class Action:
             return None
         if self.provider == "CodeBuild":
             return None
-        if self.provider == "S3" and self.category == "Source":
-            # This could be changed to use a new role that is bootstrapped, ideally we rename adf-cloudformation-role to a generic deployment role name
-            return "arn:aws:iam::{0}:role/adf-codecommit-role".format(self.map_params['default_providers']['source']['properties']['account_id'])
-        if self.provider == "S3" and self.category == "Deploy":
-            # This could be changed to use a new role that is bootstrapped, ideally we rename adf-cloudformation-role to a generic deployment role name
-            return "arn:aws:iam::{0}:role/adf-cloudformation-role".format(self.target['id'])
+        if self.provider == "S3":
+            if self.category == "Source":
+                # This could be changed to use a new role that is bootstrapped, ideally we rename adf-cloudformation-role to a generic deployment role name
+                return "arn:aws:iam::{0}:role/adf-codecommit-role".format(self.map_params['default_providers']['source']['properties']['account_id'])
+            if self.category == "Deploy":
+                # This could be changed to use a new role that is bootstrapped, ideally we rename adf-cloudformation-role to a generic deployment role name
+                return "arn:aws:iam::{0}:role/adf-cloudformation-role".format(self.target['id'])
         if self.provider == "ServiceCatalog":
             # This could be changed to use a new role that is bootstrapped, ideally we rename adf-cloudformation-role to a generic deployment role name
             return "arn:aws:iam::{0}:role/adf-cloudformation-role".format(self.target['id'])
@@ -301,11 +314,9 @@ class Action:
             "region": self.region or ADF_DEPLOYMENT_REGION,
             "run_order": self.run_order
         }
-        input_artifacts = self._get_input_artifacts()
-        if input_artifacts:
+        if input_artifacts := self._get_input_artifacts():
             action_props["input_artifacts"] = input_artifacts
-        output_artifacts = self._get_output_artifacts()
-        if output_artifacts:
+        if output_artifacts := self._get_output_artifacts():
             action_props["output_artifacts"] = output_artifacts
         if _role:
             action_props["role_arn"] = _role
@@ -338,7 +349,7 @@ class Action:
         Returns:
             list<CfnPipeline.InputArtifactProperty>: The Input Artifacts
         """
-        if not self.category in ['Build', 'Deploy']:
+        if self.category not in ['Build', 'Deploy']:
             return []
         input_artifacts = [
             _codepipeline.CfnPipeline.InputArtifactProperty(
@@ -379,8 +390,7 @@ class Action:
         Returns:
             list<CfnPipeline.OutputArtifactProperty>: The Output Artifacts
         """
-        output_artifact_name = self._get_base_output_artifact_name()
-        if output_artifact_name:
+        if output_artifact_name := self._get_base_output_artifact_name():
             return [
                 _codepipeline.CfnPipeline.OutputArtifactProperty(
                     name=output_artifact_name
@@ -436,32 +446,24 @@ class Pipeline(core.Construct):
 
     @staticmethod
     def restructure_tags(current_tags):
-        tags = []
-        for k, v in current_tags.items():
-            tags.append({"key": k, "value": v})
-        return tags
+        return [{"key": k, "value": v} for k, v in current_tags.items()]
 
     @staticmethod
     def generate_artifact_stores(map_params, ssm_params):
-        output = []
-        for region in map_params["regions"]:
-            output.append(_codepipeline.CfnPipeline.ArtifactStoreMapProperty(
+        return [
+            _codepipeline.CfnPipeline.ArtifactStoreMapProperty(
                 artifact_store=_codepipeline.CfnPipeline.ArtifactStoreProperty(
                     location=ssm_params[region]["s3"],
                     type="S3",
                     encryption_key=_codepipeline.CfnPipeline.EncryptionKeyProperty(
-                        id=ssm_params[region]["kms"],
-                        type="KMS"
-                    )
+                        id=ssm_params[region]["kms"], type="KMS"
+                    ),
                 ),
-                region=region
-            ))
-        return output
+                region=region,
+            )
+            for region in map_params["regions"]
+        ]
 
     @staticmethod
     def import_required_arns():
-        _output = []
-        for arn in Pipeline._import_arns:
-            # pylint: disable=no-value-for-parameter
-            _output.append(core.Fn.import_value(arn))
-        return _output
+        return [core.Fn.import_value(arn) for arn in Pipeline._import_arns]

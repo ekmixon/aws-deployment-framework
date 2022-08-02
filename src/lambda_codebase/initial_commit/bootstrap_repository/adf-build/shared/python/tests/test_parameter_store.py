@@ -14,11 +14,7 @@ from parameter_store import ParameterStore
 
 @fixture
 def cls():
-    cls = ParameterStore(
-        'us-east-1',
-        boto3
-    )
-    return cls
+    return ParameterStore('us-east-1', boto3)
 
 def test_fetch_parameter(cls):
     cls.client = Mock()

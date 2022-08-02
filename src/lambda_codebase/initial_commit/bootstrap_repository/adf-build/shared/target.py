@@ -27,9 +27,7 @@ class TargetStructure:
     @staticmethod
     def _define_target_type(target):
         if isinstance(target, list):
-            output = []
-            for t in target:
-                output.append({"path": [t]})
+            output = [{"path": [t]} for t in target]
             target = output
         if isinstance(target, (int, str)):
             target = [{"path": [target]}]
@@ -52,13 +50,13 @@ class Target:
         self.step_name = step.get('name', '')
         self.provider = step.get('provider', {})
         self.properties = step.get('properties', {})
-        self.regions = [regions] if not isinstance(regions, list) else regions
+        self.regions = regions if isinstance(regions, list) else [regions]
         self.target_structure = target_structure
         self.organizations = organizations
 
     @staticmethod
     def _account_is_active(account):
-        return bool(account.get('Status') == 'ACTIVE')
+        return account.get('Status') == 'ACTIVE'
 
     def _create_target_info(self, name, account_id):
         return {
@@ -144,11 +142,9 @@ class Target:
                 "This error is thrown to be on the safe side such that it "
                 "is not targeting the wrong account by accident.",
                 str(self.path),
-                # Optimistically convert the path from 10-base to octal 8-base
-                # Then remove the use of the 'o' char, as it will output
-                # in the correct way, starting with: 0o.
-                str(oct(int(self.path))).replace('o', ''),
+                oct(int(self.path)).replace('o', ''),
             )
+
         if str(self.path).startswith('/'):
             return self._target_is_ou_path()
         if self.path is None:

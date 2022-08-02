@@ -131,6 +131,6 @@ def get_organization_root_id() -> str:
             organization_root_id = roots["Roots"][0]["Id"]
             LOGGER.info("ORG root id is: %s", organization_root_id)
             return cast(str, organization_root_id)
-        if not "NextToken" in roots:
+        if "NextToken" not in roots:
             raise Exception("Unable to find ORG root id")
         params["next_token"] = roots["NextToken"]

@@ -18,7 +18,9 @@ def read_config_files(folder):
         if filename.endswith(".yml"):
             with open(filename, 'r') as stream:
                 config = yaml.safe_load(stream)
-                for account in config.get('accounts', []):
-                    accounts.append(Account.load_from_config(account))
+                accounts.extend(
+                    Account.load_from_config(account)
+                    for account in config.get('accounts', [])
+                )
 
     return accounts

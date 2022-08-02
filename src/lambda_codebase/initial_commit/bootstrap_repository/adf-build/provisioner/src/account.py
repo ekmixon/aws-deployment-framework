@@ -29,10 +29,7 @@ class Account:
         self.alias = alias
         self.support_level = support_level
 
-        if tags is None:
-            self.tags = {}
-        else:
-            self.tags = tags
+        self.tags = {} if tags is None else tags
 
     @classmethod
     def load_from_config(cls, config):

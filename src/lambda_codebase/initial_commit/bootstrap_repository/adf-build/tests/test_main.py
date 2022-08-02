@@ -14,13 +14,12 @@ from main import *
 @fixture
 def cls():
     parameter_store = Mock()
-    config = Config(
+    return Config(
         parameter_store=parameter_store,
         config_path='{0}/stubs/stub_adfconfig.yml'.format(
             os.path.dirname(os.path.realpath(__file__))
-        )
+        ),
     )
-    return config
 
 @fixture
 def sts():
@@ -44,8 +43,7 @@ def test_is_account_valid_state(cls):
     assert is_account_in_invalid_state('ou-123', cls.__dict__) == False
 
 def test_is_account_in_invalid_state(cls):
-    cls.protected = []
-    cls.protected.append('ou-123')
+    cls.protected = ['ou-123']
     assert is_account_in_invalid_state('ou-123', cls.__dict__) == 'Is in a protected Organizational Unit ou-123, it will be skipped.'
 
 def test_is_account_is_in_root(cls):

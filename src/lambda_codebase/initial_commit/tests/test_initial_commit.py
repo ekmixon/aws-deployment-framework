@@ -64,10 +64,13 @@ def test_get_files_to_delete(cc_client, path_cls):
         'differences': differences,
     }
     path_rglob_mock = Mock()
-    path_rglob_mock.rglob.return_value = list(map(
-        lambda path: "/var/task/bootstrap_repository/{}".format(path),
-        FILES_IN_UPSTREAM_REPO,
-    ))
+    path_rglob_mock.rglob.return_value = list(
+        map(
+            lambda path: f"/var/task/bootstrap_repository/{path}",
+            FILES_IN_UPSTREAM_REPO,
+        )
+    )
+
     path_cls.side_effect = lambda path: (
         path_rglob_mock if path == '/var/task/bootstrap_repository/'
         else GenericPathMocked(path)

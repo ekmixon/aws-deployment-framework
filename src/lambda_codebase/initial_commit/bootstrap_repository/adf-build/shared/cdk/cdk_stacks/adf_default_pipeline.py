@@ -185,8 +185,7 @@ def generate_deployment_action_per_region(_actions,
                 "change_set_approval", False
             )
             _target_action_mode = target.get("properties", {}).get("action")
-            action_mode = _target_action_mode or top_level_action
-            if action_mode:
+            if action_mode := _target_action_mode or top_level_action:
                 _actions.extend(
                     [
                         adf_codepipeline.Action(

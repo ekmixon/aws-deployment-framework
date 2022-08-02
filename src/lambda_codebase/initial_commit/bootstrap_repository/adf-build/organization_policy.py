@@ -65,7 +65,6 @@ class OrganizationPolicy:
                     LOGGER.info(
                         'FullAWSAccess will stay attached since keep-default-scp is enabled. Path is: %s',
                         path)
-                    pass
 
     @staticmethod
     def clean_and_remove_policy_attachment(
@@ -120,8 +119,6 @@ class OrganizationPolicy:
             except ParameterNotFoundError:
                 LOGGER.debug(
                     'Parameter %s was not found in Parameter Store, continuing.', policy)
-                pass
-
             for _policy in _policies:
                 path = OrganizationPolicy._trim_scp_file_name(
                     _policy) if policy == 'scp' else OrganizationPolicy._trim_tagging_policy_file_name(_policy)

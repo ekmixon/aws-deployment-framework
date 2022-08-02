@@ -68,37 +68,32 @@ class Resolver:
             if not optional:
                 raise
             stack_output = ""
-            pass
         try:
             parent_key = list(Resolver.determine_parent_key(self.comparison_parameters, key))[0]
-            if optional:
-                self.stage_parameters[parent_key][key] = stack_output
-            else:
-                if not stack_output:
-                    raise Exception(
-                        "No Stack Output found on {account_id} in {region} "
-                        "with stack name {stack} and output key "
-                        "{output_key}".format(
-                            account_id=account_id,
-                            region=region,
-                            stack=stack_name,
-                            output_key=output_key,
-                        )
+            if not optional and not stack_output:
+                raise Exception(
+                    "No Stack Output found on {account_id} in {region} "
+                    "with stack name {stack} and output key "
+                    "{output_key}".format(
+                        account_id=account_id,
+                        region=region,
+                        stack=stack_name,
+                        output_key=output_key,
                     )
-                self.stage_parameters[parent_key][key] = stack_output
+                )
+            self.stage_parameters[parent_key][key] = stack_output
         except IndexError as error:
-            if stack_output:
-                if self.stage_parameters.get(key):
-                    self.stage_parameters[key] = stack_output
-            else:
+            if not stack_output:
                 raise Exception(
                     "Could not determine the structure of the file in order "
                     "to import from CloudFormation",
                 ) from error
+            if self.stage_parameters.get(key):
+                self.stage_parameters[key] = stack_output
         return True
 
     def upload(self, value, key, file_name):
-        if not any(item in value for item in S3.supported_path_styles()):
+        if all(item not in value for item in S3.supported_path_styles()):
             raise Exception(
                 'When uploading to S3 you need to specify a path style'
                 'to use for the returned value to be used. '
@@ -140,8 +135,7 @@ class Resolver:
             if key == target_key:
                 yield parent_key
             if isinstance(value, dict):
-                for result in Resolver.determine_parent_key(value, target_key, key):
-                    yield result
+                yield from Resolver.determine_parent_key(value, target_key, key)
 
     def fetch_parameter_store_value(self, value, key, optional=False): # pylint: disable=too-many-statements
         if self._is_optional(value):
@@ -157,11 +151,10 @@ class Resolver:
         try:
             parameter = self.cache.check('{0}/{1}'.format(region, value)) or client.fetch_parameter(value)
         except ParameterNotFoundError:
-            if optional:
-                LOGGER.info("Parameter %s not found, returning empty string", value)
-                parameter = ""
-            else:
+            if not optional:
                 raise
+            LOGGER.info("Parameter %s not found, returning empty string", value)
+            parameter = ""
         try:
             parent_key = list(Resolver.determine_parent_key(self.comparison_parameters, key))[0]
             if parameter:

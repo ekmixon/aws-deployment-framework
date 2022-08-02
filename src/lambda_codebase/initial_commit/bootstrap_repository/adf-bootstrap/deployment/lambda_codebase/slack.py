@@ -39,9 +39,7 @@ def is_approval(message):
     """
     Determines if the message sent in was for an approval action
     """
-    if isinstance(message, str):
-        return False
-    return message.get('approval', None)
+    return False if isinstance(message, str) else message.get('approval', None)
 
 def is_bootstrap(event):
     """
@@ -51,10 +49,7 @@ def is_bootstrap(event):
     """
     try:
         message = json.loads(event['Records'][0]['Sns']['Message'])
-        if isinstance(message, dict):
-            if message.get('Error'):
-                return True
-        return False
+        return bool(isinstance(message, dict) and message.get('Error'))
     except ValueError:
         return True
 
@@ -113,9 +108,8 @@ def create_bootstrap_message_text(channel, message):
     """
     Creates a dict that will be sent to send_message for bootstrapping completion
     """
-    if isinstance(message, dict):
-        if message.get('Error'):
-            message = json.loads(message.get('Cause')).get('errorMessage')
+    if isinstance(message, dict) and message.get('Error'):
+        message = json.loads(message.get('Cause')).get('errorMessage')
 
     emote = ":red_circle:" if any(x in message for x in ['error', 'Failed']) else ":white_check_mark:"
     return {

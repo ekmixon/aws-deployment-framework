@@ -70,7 +70,11 @@ def test_pipeline_creation_outputs_as_expected_when_source_is_s3_and_build_is_co
     PipelineStack(app, stack_input)
 
     cloud_assembly = app.synth()
-    resources = {k[0:-8]: v for k, v in cloud_assembly.stacks[0].template['Resources'].items()}
+    resources = {
+        k[:-8]: v
+        for k, v in cloud_assembly.stacks[0].template['Resources'].items()
+    }
+
     code_pipeline = resources['codepipeline']
     assert code_pipeline['Type'] == "AWS::CodePipeline::Pipeline"
     assert len(code_pipeline["Properties"]["Stages"]) == 2
@@ -120,7 +124,11 @@ def test_pipeline_creation_outputs_as_expected_when_source_is_codecommit_and_bui
     PipelineStack(app, stack_input)
 
     cloud_assembly = app.synth()
-    resources = {k[0:-8]: v for k, v in cloud_assembly.stacks[0].template['Resources'].items()}
+    resources = {
+        k[:-8]: v
+        for k, v in cloud_assembly.stacks[0].template['Resources'].items()
+    }
+
     code_pipeline = resources['codepipeline']
     assert code_pipeline['Type'] == "AWS::CodePipeline::Pipeline"
     assert len(code_pipeline["Properties"]["Stages"]) == 2

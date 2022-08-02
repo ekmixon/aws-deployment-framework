@@ -105,6 +105,7 @@ def test_get_stack_name_remove_unaccepted_chars():
             deployment_account_region='eu-west-1',
             stack_name=None,
             s3=None,
-            s3_key_path='/some/weird{}location'.format(unaccepted_char),
+            s3_key_path=f'/some/weird{unaccepted_char}location',
         )
+
         assert props._get_stack_name() == 'adf-global-base-weird-location'

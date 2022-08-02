@@ -30,7 +30,7 @@ class Pipeline:
 
     @staticmethod
     def flatten_list(input_list):
-        result = list()
+        result = []
         for item in input_list:
             if isinstance(item, list):
                 result.extend(Pipeline.flatten_list(item))
@@ -51,11 +51,9 @@ class Pipeline:
 
     def _input_type_validation(self, params): #pylint: disable=R0201
         if not params.get('default_providers', {}).get('build', {}):
-            params['default_providers']['build'] = {}
-            params['default_providers']['build']['provider'] = 'codebuild'
+            params['default_providers']['build'] = {'provider': 'codebuild'}
         if not params.get('default_providers', {}).get('deploy', {}):
-            params['default_providers']['deploy'] = {}
-            params['default_providers']['deploy']['provider'] = 'cloudformation'
+            params['default_providers']['deploy'] = {'provider': 'cloudformation'}
         return params
 
     def generate_input(self):

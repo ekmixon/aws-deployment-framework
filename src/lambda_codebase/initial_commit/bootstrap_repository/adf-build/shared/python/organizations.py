@@ -136,7 +136,7 @@ class Organizations: # pylint: disable=R0904
 
     def get_accounts(self):
         for account in paginator(self.client.list_accounts):
-            if not account.get('Status') == 'ACTIVE':
+            if account.get('Status') != 'ACTIVE':
                 LOGGER.warning('Account %s is not an Active AWS Account', account['Id'])
                 continue
             self.account_ids.append(account)
@@ -201,8 +201,7 @@ class Organizations: # pylint: disable=R0904
                 raise Exception(
                     "Path {0} failed to return a child OU at '{1}'".format(
                         path, p[0]))
-        else: # pylint: disable=W0120
-            return self.get_accounts_for_parent(ou_id)
+        return self.get_accounts_for_parent(ou_id)
 
     def build_account_path(self, ou_id, account_path, cache):
         """Builds a path tree to the account from the root of the Organization
@@ -234,10 +233,7 @@ class Organizations: # pylint: disable=R0904
     def get_account_ids_for_tags(self, tags):
         tag_filter = []
         for key, value in tags.items():
-            if isinstance(value, list):
-                values = value
-            else:
-                values = [value]
+            values = value if isinstance(value, list) else [value]
             tag_filter.append({'Key': key, 'Values': values})
         account_ids = []
         for resource in paginator(self.tags_client.get_resources, TagFilters=tag_filter, ResourceTypeFilters=['organizations']):
@@ -247,28 +243,31 @@ class Organizations: # pylint: disable=R0904
         return account_ids
 
     def list_organizational_units_for_parent(self, parent_ou):
-        organizational_units = [
+        return [
             ou
-            for org_units in self.client.get_paginator("list_organizational_units_for_parent").paginate(ParentId=parent_ou)
+            for org_units in self.client.get_paginator(
+                "list_organizational_units_for_parent"
+            ).paginate(ParentId=parent_ou)
             for ou in org_units['OrganizationalUnits']
         ]
-        return organizational_units
 
     def get_account_id(self, account_name):
-        for account in self.list_accounts():
-            if account["Name"].strip() == account_name.strip():
-                return account['Id']
-
-        return None
+        return next(
+            (
+                account['Id']
+                for account in self.list_accounts()
+                if account["Name"].strip() == account_name.strip()
+            ),
+            None,
+        )
 
     def list_accounts(self):
         """Retrieves all accounts in organization."""
-        existing_accounts = [
+        return [
             account
             for accounts in self.client.get_paginator("list_accounts").paginate()
             for account in accounts['Accounts']
         ]
-        return existing_accounts
 
     def get_ou_id(self, ou_path, parent_ou_id=None):
         # Return root OU if '/' is provided

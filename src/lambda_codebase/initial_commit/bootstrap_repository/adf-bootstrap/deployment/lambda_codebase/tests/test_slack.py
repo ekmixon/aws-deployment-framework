@@ -41,7 +41,7 @@ def test_is_bootstrap(stubs):
 
 def test_create_approval(stubs):
     message = extract_message(stub_approval_event)
-    assert bool(is_approval(message)) == True
+    assert bool(is_approval(message))
 
 def test_create_pipeline_message_text(stubs):
     message = extract_message(stub_failed_pipeline_event)

@@ -266,15 +266,13 @@ class CloudFormation(StackProperties):
             'iam'
         )
         waiter = self._get_waiter_type()
-        create_change_set = self._create_change_set()
-        if create_change_set:
+        if create_change_set := self._create_change_set():
             self._execute_change_set(waiter)
             self._update_stack_termination_protection()
 
     def create_stack(self):
         waiter = self._get_waiter_type()
-        create_change_set = self._create_change_set()
-        if create_change_set:
+        if create_change_set := self._create_change_set():
             self._execute_change_set(waiter)
             self._update_stack_termination_protection()
 
@@ -286,16 +284,16 @@ class CloudFormation(StackProperties):
 
     def delete_all_base_stacks(self, wait_override=False):
         for stack in paginator(self.client.list_stacks):
-            if bool(
-                    re.search(
-                        'adf-(global|regional)-base',
-                        stack.get('StackName'))):
-                if stack.get(
-                        'StackStatus') in StackProperties.clean_stack_status:
-                    LOGGER.warning(
-                        'Removing Stack: %s',
-                        stack.get('StackName'))
-                    self.delete_stack(stack.get('StackName'), wait_override)
+            if (
+                bool(
+                    re.search('adf-(global|regional)-base', stack.get('StackName'))
+                )
+                and stack.get('StackStatus') in StackProperties.clean_stack_status
+            ):
+                LOGGER.warning(
+                    'Removing Stack: %s',
+                    stack.get('StackName'))
+                self.delete_stack(stack.get('StackName'), wait_override)
 
     def get_stack_output(self, value):
         try:

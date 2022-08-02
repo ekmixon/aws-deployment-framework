@@ -154,10 +154,13 @@ def generate_commit_input(repo_name, index, branch="master", parent_commit_id=No
         "branchName": branch,
         "authorName": "AWS ADF Builders Team",
         "email": "adf-builders@amazon.com",
-        "commitMessage": "Automated Commit - {0} Part {1}".format("Delete" if deletes else "Create", index),
-        "putFiles": puts if puts else [],
-        "deleteFiles": deletes if deletes else []
+        "commitMessage": "Automated Commit - {0} Part {1}".format(
+            "Delete" if deletes else "Create", index
+        ),
+        "putFiles": puts or [],
+        "deleteFiles": deletes or [],
     }
+
     if parent_commit_id:
         output["parentCommitId"] = parent_commit_id
     return output
@@ -302,7 +305,9 @@ def get_files_to_commit(directoryName: str) -> List[FileToCommit]:
     return [
         FileToCommit(
             str(get_relative_name(entry, directoryName)),
-            FileMode.NORMAL if not os.access(entry, os.X_OK) else FileMode.EXECUTABLE,
+            FileMode.EXECUTABLE
+            if os.access(entry, os.X_OK)
+            else FileMode.NORMAL,
             entry.read_bytes(),
         )
         for entry in path.glob("**/*")

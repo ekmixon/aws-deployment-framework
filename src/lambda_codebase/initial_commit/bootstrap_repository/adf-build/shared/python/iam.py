@@ -87,13 +87,15 @@ class IAM:
         """
         _policy = self._get_policy()
         for statement in _policy.get('Statement', None):
-            if statement['Sid'] == 'KMS':
-                if kms_key_arn not in statement['Resource']:
-                    LOGGER.info('Updating Role %s to be able to access %s', self.role_name, kms_key_arn)
-                    try:
-                        statement['Resource'].append(kms_key_arn)
-                    except AttributeError:
-                        statement['Resource'] = [statement['Resource']]
-                        statement['Resource'].append(kms_key_arn)
+            if (
+                statement['Sid'] == 'KMS'
+                and kms_key_arn not in statement['Resource']
+            ):
+                LOGGER.info('Updating Role %s to be able to access %s', self.role_name, kms_key_arn)
+                try:
+                    statement['Resource'].append(kms_key_arn)
+                except AttributeError:
+                    statement['Resource'] = [statement['Resource']]
+                    statement['Resource'].append(kms_key_arn)
 
         self._set_policy(_policy)

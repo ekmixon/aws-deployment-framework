@@ -177,8 +177,7 @@ def worker_thread(
     )
     ou_id = organizations.get_parent_info().get("ou_parent_id")
 
-    account_state = is_account_in_invalid_state(ou_id, config.config)
-    if account_state:
+    if account_state := is_account_in_invalid_state(ou_id, config.config):
         LOGGER.info("%s %s", account_id, account_state)
         return
 
@@ -211,9 +210,10 @@ def worker_thread(
                 wait=True,
                 stack_name=None,
                 s3=s3,
-                s3_key_path="adf-bootstrap/" + account_path,
-                account_id=account_id
+                s3_key_path=f"adf-bootstrap/{account_path}",
+                account_id=account_id,
             )
+
             try:
                 cloudformation.create_stack()
                 if region == config.deployment_account_region:
@@ -280,9 +280,10 @@ def main():  # pylint: disable=R0915
                 wait=True,
                 stack_name=None,
                 s3=s3,
-                s3_key_path="adf-bootstrap/" + account_path,
-                account_id=deployment_account_id
+                s3_key_path=f"adf-bootstrap/{account_path}",
+                account_id=deployment_account_id,
             )
+
             cloudformation.create_stack()
             update_deployment_account_output_parameters(
                 deployment_account_region=config.deployment_account_region,

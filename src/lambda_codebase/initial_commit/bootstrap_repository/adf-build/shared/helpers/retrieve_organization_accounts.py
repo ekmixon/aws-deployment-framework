@@ -185,7 +185,7 @@ def _get_member_accounts(billing_account_id, options):
     )
     org_client = billing_account_session.client('organizations')
     list_accounts_paginator = org_client.get_paginator('list_accounts')
-    accounts = list()
+    accounts = []
     for page in list_accounts_paginator.paginate():
         accounts.extend(
             page['Accounts']
@@ -194,12 +194,12 @@ def _get_member_accounts(billing_account_id, options):
     # Remove any account that is not actively part of this organization yet.
     only_active_accounts = filter(lambda a: a['Status'] == 'ACTIVE', accounts)
 
-    # Only return the key: value pairs that are defined in the --field option.
-    only_certain_fields_of_active = list(map(
-        lambda a: {k: v for k, v in a.items() if k in options['--field']},
-        only_active_accounts
-    ))
-    return only_certain_fields_of_active
+    return list(
+        map(
+            lambda a: {k: v for k, v in a.items() if k in options['--field']},
+            only_active_accounts,
+        )
+    )
 
 
 def _flush_out(accounts, options):

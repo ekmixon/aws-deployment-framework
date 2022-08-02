@@ -18,13 +18,12 @@ region_name = environ['region_name']
 def generate_dummy_resource_id(event):
     s = f"{event['StackId']}-{event['LogicalResourceId']}".encode('utf-8')
     hash_object = hashlib.sha256(s)
-    physical_resource_id = hash_object.hexdigest()
-    return physical_resource_id
+    return hash_object.hexdigest()
 
 
 def create_ec2_client(region_name, **kwargs):
     if 'profile' in kwargs:
-        logger.info("Creating Boto3 EC2 Client using profile: {}".format(kwargs['profile']))
+        logger.info(f"Creating Boto3 EC2 Client using profile: {kwargs['profile']}")
         session = boto3.Session(profile_name=kwargs['profile'])
         client = session.client('ec2', region_name=region_name)
     else:
@@ -142,8 +141,7 @@ def remove_default_vpc(client):
 
 
 def get_regions(client):
-    regions = client.describe_regions()
-    return regions
+    return client.describe_regions()
 
 
 @helper.create

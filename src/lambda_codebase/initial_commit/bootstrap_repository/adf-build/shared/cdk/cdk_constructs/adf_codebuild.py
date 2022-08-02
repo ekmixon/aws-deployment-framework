@@ -151,7 +151,7 @@ class CodeBuild(core.Construct):
         return CodeBuild._determine_stage_build_spec(
             codebuild_id=codebuild_id,
             props=default_props,
-            stage_name='default {}'.format('deploy' if target else 'build'),
+            stage_name=f"default {'deploy' if target else 'build'}",
             default_filename=(
                 DEFAULT_DEPLOY_SPEC_FILENAME
                 if target
@@ -209,7 +209,8 @@ class CodeBuild(core.Construct):
                 _output[_target_env_var[0]] = codebuild.BuildEnvironmentVariable(value=_target_env_var[1])
             _output["TARGET_NAME"] = codebuild.BuildEnvironmentVariable(value=target['name'])
             _output["TARGET_ACCOUNT_ID"] = codebuild.BuildEnvironmentVariable(value=target['id'])
-            _role = map_params['default_providers']['deploy'].get('properties', {}).get('role') or target.get('properties', {}).get('role')
-            if _role:
+            if _role := map_params['default_providers']['deploy'].get(
+                'properties', {}
+            ).get('role') or target.get('properties', {}).get('role'):
                 _output["DEPLOYMENT_ROLE"] = codebuild.BuildEnvironmentVariable(value=_role)
         return _output

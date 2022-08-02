@@ -236,7 +236,7 @@ def test_deployment_account_create_failed_other(logger, concur_mod_fn,
         )
 
     error_message = str(excinfo.value)
-    assert error_message.find(correct_error_message) >= 0
+    assert correct_error_message in error_message
 
     logger.info.assert_has_calls([
         call("Creating account ..."),
@@ -269,7 +269,7 @@ def test_deployment_account_wait_exception(logger, time_mock, org_client):
         )
 
     error_message = str(excinfo.value)
-    assert error_message.find(correct_error_message) >= 0
+    assert correct_error_message in error_message
 
     logger.info.assert_not_called()
     time_mock.sleep.assert_not_called()
@@ -290,8 +290,7 @@ def test_deployment_account_wait_on_failed(logger, time_mock, org_client):
             "FailureReason": failure_reason,
         }
     }
-    correct_error_message = \
-        "Failed to create account because %s" % failure_reason
+    correct_error_message = f"Failed to create account because {failure_reason}"
 
     with pytest.raises(Exception) as excinfo:
         wait_on_account_creation(
@@ -299,7 +298,7 @@ def test_deployment_account_wait_on_failed(logger, time_mock, org_client):
         )
 
     error_message = str(excinfo.value)
-    assert error_message.find(correct_error_message) >= 0
+    assert correct_error_message in error_message
 
     logger.info.assert_not_called()
     time_mock.sleep.assert_not_called()
@@ -427,7 +426,7 @@ def test_deployment_account_handle_concurrent_too_many_tries(logger,
         )
 
     error_message = str(excinfo.value)
-    assert error_message.find(correct_error_message) >= 0
+    assert correct_error_message in error_message
 
     logger.info.assert_called_once_with(
         "Attempt %d - hit %s", no_retries + 1, err,

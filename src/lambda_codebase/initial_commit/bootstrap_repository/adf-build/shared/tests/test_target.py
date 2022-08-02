@@ -19,14 +19,13 @@ class MockTargetStructure:
 
 @fixture
 def cls():
-    cls = Target(
+    return Target(
         path='/thing/path',
         regions=['region1', 'region2'],
         target_structure=MockTargetStructure(),
         organizations=None,
-        step={}
+        step={},
     )
-    return cls
 
 def test_account_is_active():
     assert Target._account_is_active({'Status': 'ACTIVE'}) is True

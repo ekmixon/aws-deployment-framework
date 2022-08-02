@@ -47,7 +47,6 @@ def vpc_cleanup(account_id, vpcid, role, region):
 
 
 def delete_default_vpc(client, account_id, region, role):
-    default_vpc_id = None
     max_retry_seconds = 360
     while True:
         try:
@@ -68,10 +67,14 @@ def delete_default_vpc(client, account_id, region, role):
                     "Could not describe VPCs within retry limit.",
                 ) from e
 
-    for vpc in vpc_response["Vpcs"]:
-        if vpc["IsDefault"] is True:
-            default_vpc_id = vpc["VpcId"]
-            break
+    default_vpc_id = next(
+        (
+            vpc["VpcId"]
+            for vpc in vpc_response["Vpcs"]
+            if vpc["IsDefault"] is True
+        ),
+        None,
+    )
 
     if default_vpc_id is None:
         LOGGER.debug(

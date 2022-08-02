@@ -144,7 +144,6 @@ class Parameters:
                 resolver.update(key)
         except AttributeError:
             LOGGER.debug('Input was not a dict for _determine_parameter_structure, nothing to do.')
-            pass
 
     def _param_updater(self, comparison_parameters, stage_parameters):
         """

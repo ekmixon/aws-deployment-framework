@@ -20,7 +20,7 @@ def test_get_output_artifacts_no_base_output(base_output_name_mock, action_decl_
         category='Build',
         provider='CodeBuild',
     )
-    assert not 'output_artifacts' in action.config
+    assert 'output_artifacts' not in action.config
 
 
 @patch('cdk_constructs.adf_codepipeline._codepipeline.CfnPipeline.ActionDeclarationProperty')

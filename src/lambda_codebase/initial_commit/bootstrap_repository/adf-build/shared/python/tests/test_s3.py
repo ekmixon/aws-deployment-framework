@@ -20,11 +20,7 @@ def us_east_1_cls():
 
 @fixture
 def eu_west_1_cls():
-    cls = S3(
-        'eu-west-1',
-        'some_bucket'
-    )
-    return cls
+    return S3('eu-west-1', 'some_bucket')
 
 
 def test_supported_path_styles_path():
@@ -148,7 +144,7 @@ def test_build_pathing_style_unknown_style(us_east_1_cls):
         us_east_1_cls.build_pathing_style(style, key)
 
     error_message = str(excinfo.value)
-    assert error_message.find(correct_error_message) >= 0
+    assert correct_error_message in error_message
 
 
 @patch('s3.S3.build_pathing_style')
@@ -342,7 +338,7 @@ def test_perform_put_object_no_such_file(logger, boto3_resource):
             )
 
         error_message = str(excinfo.value)
-        assert error_message.find(correct_error_message) >= 0
+        assert correct_error_message in error_message
 
         mock_file.assert_called_with(file_path, 'rb')
         s3_resource.Object.assert_not_called()
@@ -389,7 +385,7 @@ def test_perform_put_object_failed(logger, boto3_resource):
             )
 
         error_message = str(excinfo.value)
-        assert error_message.find(correct_error_message) >= 0
+        assert correct_error_message in error_message
 
         mock_file.assert_called_with(file_path, 'rb')
         s3_resource.Object.assert_called_once_with(s3_cls.bucket, object_key)

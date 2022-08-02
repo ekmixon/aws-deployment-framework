@@ -34,7 +34,7 @@ def test_determine_build_spec_with_file_and_inline_specified_no_target(buildspec
 
 
     error_message = str(excinfo.value)
-    assert error_message.find(correct_error_message) >= 0
+    assert correct_error_message in error_message
 
     buildspec_mock.from_object.assert_not_called()
     buildspec_mock.from_source_filename.assert_not_called()
@@ -69,7 +69,7 @@ def test_determine_build_spec_with_file_and_inline_specified_in_target(buildspec
 
 
     error_message = str(excinfo.value)
-    assert error_message.find(correct_error_message) >= 0
+    assert correct_error_message in error_message
 
     buildspec_mock.from_object.assert_not_called()
     buildspec_mock.from_source_filename.assert_not_called()
@@ -104,7 +104,7 @@ def test_determine_build_spec_with_file_and_inline_specified_in_deploy(buildspec
 
 
     error_message = str(excinfo.value)
-    assert error_message.find(correct_error_message) >= 0
+    assert correct_error_message in error_message
 
     buildspec_mock.from_object.assert_not_called()
     buildspec_mock.from_source_filename.assert_not_called()
